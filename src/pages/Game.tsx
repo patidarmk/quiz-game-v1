@@ -1,5 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from '@tanstack/react-router';
+import { useSearch } from '@tanstack/react-router';
 import { motion, AnimatePresence } from 'framer-motion';
 import Confetti from 'react-confetti';
 import QuestionCard from '@/components/QuestionCard';
@@ -7,18 +8,26 @@ import GameStats from '@/components/GameStats';
 import LifelineButton from '@/components/LifelineButton';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { getRandomQuestions, TriviaQuestion } from '@/data/triviaQuestions';
 import { useToast } from '@/hooks/use-toast';
 import { RotateCcw, Users, Clock, HelpCircle } from 'lucide-react';
+import { useTriviaQuestions } from '@/hooks/useTriviaQuestions';
 
 const GAME_DURATION = 30; // seconds per question
 
 export default function Game() {
   const navigate = useNavigate();
+  const search = useSearch();
   const { toast } = useToast();
   
+  // Get category from URL search params
+  const category = typeof search === 'object' && 'category' in search 
+    ? search.category as string 
+    : undefined;
+  
+  // Fetch questions using our custom hook
+  const { questions, loading, error } = useTriviaQuestions(10, category);
+  
   // Game state
-  const [questions, setQuestions] = useState<TriviaQuestion[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [showResult, setShowResult] = useState(false);
@@ -42,17 +51,22 @@ export default function Game() {
   // 50/50 lifeline state
   const [eliminatedOptions, setEliminatedOptions] = useState<number[]>([]);
   
-  // Initialize game
+  // Show error toast if using fallback
   useEffect(() => {
-    const newQuestions = getRandomQuestions(10);
-    setQuestions(newQuestions);
-  }, []);
+    if (error) {
+      toast({
+        title: "Network Issue",
+        description: error,
+        variant: "destructive"
+      });
+    }
+  }, [error, toast]);
   
   const currentQuestion = questions[currentQuestionIndex];
   
   // Timer effect
   useEffect(() => {
-    if (!currentQuestion || showResult || gameOver) return;
+    if (loading || !currentQuestion || showResult || gameOver) return;
     
     const timer = setInterval(() => {
       setTimeLeft(prev => {
@@ -66,7 +80,7 @@ export default function Game() {
     }, 1000);
     
     return () => clearInterval(timer);
-  }, [currentQuestion, showResult, gameOver]);
+  }, [currentQuestion, showResult, gameOver, loading]);
   
   const handleTimeUp = () => {
     toast({
@@ -238,32 +252,32 @@ export default function Game() {
   };
   
   const restartGame = () => {
-    setQuestions(getRandomQuestions(10));
-    setCurrentQuestionIndex(0);
-    setSelectedOption(null);
-    setShowResult(false);
-    setIsCorrect(null);
-    setScore(0);
-    setStreak(0);
-    setLives(3);
-    setLevel(1);
-    setTimeLeft(GAME_DURATION);
-    setGameOver(false);
-    setLifelines({
-      fiftyFifty: false,
-      askAudience: false,
-      phoneFriend: false
-    });
-    setEliminatedOptions([]);
+    window.location.reload();
   };
   
-  if (questions.length === 0) {
+  if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-          <p className="mt-4 text-lg">Loading questions...</p>
+          <p className="mt-4 text-lg">Loading questions from online database...</p>
         </div>
+      </div>
+    );
+  }
+  
+  if (questions.length === 0) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Card className="p-6 max-w-md text-center">
+          <h2 className="text-2xl font-bold mb-4">No Questions Available</h2>
+          <p className="text-muted-foreground mb-6">
+            We couldn't load any trivia questions. Please try again later.
+          </p>
+          <Button onClick={() => navigate({ to: '/' })}>
+            Back to Home
+          </Button>
+        </Card>
       </div>
     );
   }
