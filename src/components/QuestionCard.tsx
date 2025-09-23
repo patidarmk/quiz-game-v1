@@ -33,14 +33,61 @@ export default function QuestionCard({
     }
   };
 
-  // Decode HTML entities in question text
+  // Robust HTML entity decoder
   const decodeHtmlEntities = (text: string): string => {
-    const textArea = document.createElement('textarea');
-    textArea.innerHTML = text;
-    return textArea.value;
+    const entities: Record<string, string> = {
+      '&amp;': '&',
+      '&lt;': '<',
+      '&gt;': '>',
+      '&quot;': '"',
+      '&#039;': "'",
+      '&apos;': "'",
+      '&plus;': '+',
+      '&percnt;': '%',
+      '&equals;': '=',
+      '&nbsp;': ' ',
+      '&copy;': '©',
+      '&reg;': '®',
+      '&trade;': '™',
+      '&euro;': '€',
+      '&pound;': '£',
+      '&yen;': '¥',
+      '&cent;': '¢',
+      '&deg;': '°',
+      '&sup2;': '²',
+      '&sup3;': '³',
+      '&frac14;': '¼',
+      '&frac12;': '½',
+      '&frac34;': '¾',
+      '&times;': '×',
+      '&divide;': '÷',
+      '&ndash;': '–',
+      '&mdash;': '—',
+      '&hellip;': '…',
+      '&lsquo;': '‘',
+      '&rsquo;': '’',
+      '&ldquo;': '"',
+      '&rdquo;': '"',
+      '&laquo;': '«',
+      '&raquo;': '»',
+      '&iexcl;': '¡',
+      '&iquest;': '¿'
+    };
+
+    let decoded = text;
+    Object.entries(entities).forEach(([entity, char]) => {
+      decoded = decoded.replace(new RegExp(entity, 'g'), char);
+    });
+
+    // Handle numeric entities like &#43; or &#37;
+    decoded = decoded.replace(/&#(\d+);/g, (match, dec) => String.fromCharCode(dec));
+    decoded = decoded.replace(/&#x([0-9a-fA-F]+);/g, (match, hex) => String.fromCharCode(parseInt(hex, 16)));
+
+    return decoded;
   };
 
   const decodedQuestion = decodeHtmlEntities(question.question);
+  const decodedOptions = question.options.map(option => decodeHtmlEntities(option));
 
   return (
     <motion.div
@@ -72,7 +119,7 @@ export default function QuestionCard({
           </div>
         </CardHeader>
         <CardContent className="space-y-3">
-          {question.options.map((option, index) => {
+          {decodedOptions.map((option, index) => {
             let buttonVariant: "default" | "secondary" | "destructive" | "outline" = "outline";
             let showIcon = false;
             
