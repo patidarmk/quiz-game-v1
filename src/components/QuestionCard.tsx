@@ -33,6 +33,15 @@ export default function QuestionCard({
     }
   };
 
+  // Decode HTML entities in question text
+  const decodeHtmlEntities = (text: string): string => {
+    const textArea = document.createElement('textarea');
+    textArea.innerHTML = text;
+    return textArea.value;
+  };
+
+  const decodedQuestion = decodeHtmlEntities(question.question);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -56,9 +65,11 @@ export default function QuestionCard({
               </div>
             </div>
           </div>
-          <CardTitle className="text-xl md:text-2xl mt-4 text-left leading-relaxed">
-            {question.question}
-          </CardTitle>
+          <div className="mt-4">
+            <CardTitle className="text-xl md:text-2xl text-left leading-relaxed break-words">
+              {decodedQuestion}
+            </CardTitle>
+          </div>
         </CardHeader>
         <CardContent className="space-y-3">
           {question.options.map((option, index) => {
