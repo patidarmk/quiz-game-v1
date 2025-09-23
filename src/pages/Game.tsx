@@ -16,11 +16,11 @@ const GAME_DURATION = 30; // seconds per question
 
 export default function Game() {
   const navigate = useNavigate();
-  const search = useSearch();
+  const search = useSearch({ strict: false });
   const { toast } = useToast();
   
   // Get category from URL search params
-  const category = typeof search === 'object' && 'category' in search 
+  const category = typeof search === 'object' && search !== null && 'category' in search 
     ? search.category as string 
     : undefined;
   
