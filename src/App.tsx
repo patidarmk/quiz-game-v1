@@ -3,32 +3,7 @@ import {
   createRouter, 
   RouterProvider, 
   createRootRoute, 
-  createRoute as createTanStackRoute, 
-  Outlet 
-} from '@tanstack/react-router'
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import Index from "./pages/Index";
-import Categories from "./pages/Categories";
-import Game from "./pages/Game";
-import Header from "./components/Header";
-
-const queryClient = new QueryClient();
-
-// Create root route
-const rootRoute = createRootRoute({
-  component: () => (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <div<applaa-write path="src/App.tsx" description="Updating the main App component with routing for all game pages">
-import * as React from 'react'
-import { 
-  createRouter, 
-  RouterProvider, 
-  createRootRoute, 
-  createRoute as createTanStackRoute, 
+  createRoute,
   Outlet 
 } from '@tanstack/react-router'
 import { Toaster } from "@/components/ui/toaster";
@@ -61,19 +36,19 @@ const rootRoute = createRootRoute({
 })
 
 // Create routes
-const indexRoute = createTanStackRoute({
+const indexRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/',
   component: Index,
 })
 
-const categoriesRoute = createTanStackRoute({
+const categoriesRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/categories',
   component: Categories,
 })
 
-const gameRoute = createTanStackRoute({
+const gameRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/game',
   component: Game,
@@ -86,10 +61,10 @@ const routeTree = rootRoute.addChildren([
   gameRoute
 ])
 
-// Create router with proper TypeScript configuration
+// Create router
 const router = createRouter({ 
   routeTree,
-  defaultPreload: 'intent' as const,
+  defaultPreload: 'intent',
   defaultPreloadStaleTime: 0,
 })
 
