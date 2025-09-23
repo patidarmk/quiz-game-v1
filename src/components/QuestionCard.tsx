@@ -56,7 +56,7 @@ export default function QuestionCard({
               </div>
             </div>
           </div>
-          <CardTitle className="text-xl md:text-2xl mt-2">
+          <CardTitle className="text-xl md:text-2xl mt-4 text-left leading-relaxed">
             {question.question}
           </CardTitle>
         </CardHeader>
